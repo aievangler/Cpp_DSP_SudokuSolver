@@ -1,7 +1,10 @@
 #pragma once
 #include <vector>
 #include <cstdint>
+<<<<<<< HEAD
 #include <cstddef>
+=======
+>>>>>>> origin/main
 
 struct SolverState;
 

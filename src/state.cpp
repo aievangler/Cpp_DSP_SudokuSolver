@@ -64,6 +64,7 @@ void SolverState::init_from_puzzle(const std::string& puzzle){
         scarcity[d] = geom::popcnt(B[d]);
     }
     // Enqueue L4 for any singletons (givens or forced)
+<<<<<<< HEAD
     // Seed with dedup flags so later enqueues don't create duplicates.
     for(int i=0;i<81;++i){
         if (__builtin_popcount((unsigned)cell_mask[i]) == 1) {
@@ -71,6 +72,11 @@ void SolverState::init_from_puzzle(const std::string& puzzle){
                 q_l4.push_back(i);
                 enq_l4[i] = 1;
             }
+=======
+    for(int i=0;i<81;++i){
+        if (__builtin_popcount((unsigned)cell_mask[i]) == 1) {
+            q_l4.push_back(i);
+>>>>>>> origin/main
         }
     }
 }

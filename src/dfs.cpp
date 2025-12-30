@@ -4,6 +4,7 @@
 #include "trail.hpp"
 #include <algorithm>
 
+<<<<<<< HEAD
 namespace {
 // Fill cand[0..n) with digits present in a 9-bit mask.
 inline int fill_candidates(uint16_t mask, int cand[9]) {
@@ -35,6 +36,8 @@ inline void sort_candidates_desc(int cand[9], int n, ScoreFn score) {
 }
 } // namespace
 
+=======
+>>>>>>> origin/main
 static bool dfs_single_node(SolverState& S, const SolverConfig& cfg, int depth);
 static bool dfs_dual_node(SolverState& S, const SolverConfig& cfg, int depth);
 static bool dfs_with_py(SolverState& S, const SolverConfig& cfg, int depth, int px);
@@ -64,6 +67,7 @@ static bool dfs_single_node(SolverState& S, const SolverConfig& cfg, int depth) 
     if (c < 0) return true;
 
     uint16_t mask = S.cell_mask[c];
+<<<<<<< HEAD
     int cand[9];
     int n = fill_candidates(mask, cand);
     compute_scarcity(S);
@@ -71,6 +75,16 @@ static bool dfs_single_node(SolverState& S, const SolverConfig& cfg, int depth) 
 
     for (int i = 0; i < n; ++i) {
         int d = cand[i];
+=======
+    std::vector<int> cand; cand.reserve(9);
+    generate_candidates_from_mask(mask, cand);
+    compute_scarcity(S);
+    std::sort(cand.begin(), cand.end(), [&](int a, int b){
+        return score_digit(S, c, a) > score_digit(S, c, b);
+    });
+
+    for (int d : cand) {
+>>>>>>> origin/main
         size_t mark = S.trail->mark();
         if (!place_digit(S, c, d)) {
             S.trail->undo_to(S, mark);
@@ -101,6 +115,7 @@ static bool dfs_dual_node(SolverState& S, const SolverConfig& cfg, int depth) {
     uint16_t mask_px = S.cell_mask[px];
     int mrv_px = popcount9(mask_px);
 
+<<<<<<< HEAD
     int cand_x[9];
     int nx = fill_candidates(mask_px, cand_x);
     compute_scarcity(S);
@@ -108,6 +123,16 @@ static bool dfs_dual_node(SolverState& S, const SolverConfig& cfg, int depth) {
 
     for (int ix = 0; ix < nx; ++ix) {
         int dx = cand_x[ix];
+=======
+    std::vector<int> cand_x; cand_x.reserve(9);
+    generate_candidates_from_mask(mask_px, cand_x);
+    compute_scarcity(S);
+    std::sort(cand_x.begin(), cand_x.end(), [&](int a, int b){
+        return score_digit(S, px, a) > score_digit(S, px, b);
+    });
+
+    for (int dx : cand_x) {
+>>>>>>> origin/main
         size_t mark = S.trail->mark();
         if (!place_digit(S, px, dx)) {
             S.trail->undo_to(S, mark);
@@ -144,12 +169,23 @@ static bool dfs_with_py(SolverState& S,
     uint16_t mask_py = S.cell_mask[py];
     if (mask_py == 0) return false;
 
+<<<<<<< HEAD
     int cand_y[9];
     int ny = fill_candidates(mask_py, cand_y);
     compute_scarcity(S);
     sort_candidates_desc(cand_y, ny, [&](int d){ return score_digit(S, py, d); });
 
     int limit = ny;
+=======
+    std::vector<int> cand_y; cand_y.reserve(9);
+    generate_candidates_from_mask(mask_py, cand_y);
+    compute_scarcity(S);
+    std::sort(cand_y.begin(), cand_y.end(), [&](int a, int b){
+        return score_digit(S, py, a) > score_digit(S, py, b);
+    });
+
+    int limit = static_cast<int>(cand_y.size());
+>>>>>>> origin/main
     if (dc.max_py_candidates > 0) {
         limit = std::min(limit, dc.max_py_candidates);
     }

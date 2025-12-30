@@ -67,6 +67,7 @@ bool place_digit(SolverState& S, int c, int d){
     // Trail entry remembers old mask; we enforce the single after wiping other digits
     S.trail->push_place(c, d, old);
 
+<<<<<<< HEAD
     // Update this cell to singleton {d} WITHOUT creating per-digit trail entries.
     // We directly update B[] and unit_digit_count for the digits removed from this cell.
     uint16_t newm = (uint16_t)(1u<<d);
@@ -94,6 +95,20 @@ bool place_digit(SolverState& S, int c, int d){
     S.cell_mask[c] = newm;
     S.cell_value[c] = (uint8_t)(d+1);
 // Eliminate d from peers
+=======
+    // Remove other digits from this cell (update counts/B and possibly L1)
+    for(int x=0; x<9; ++x){
+        if(x==d) continue;
+        if((old>>x)&1u){
+            if(!eliminate_digit(S, c, x)) return false;
+        }
+    }
+    // Now enforce single mask and set value
+    S.cell_mask[c] = (uint16_t)(1u<<d);
+    S.cell_value[c] = (uint8_t)(d+1);
+
+    // Eliminate d from peers
+>>>>>>> origin/main
     auto peers = geom::PEER_MASK[c];
     Bits81 affected = geom::band(S.B[d], peers); // cells that currently still allow d among peers
 
@@ -224,12 +239,18 @@ bool propagate(SolverState& S){
             auto mask = geom::band(S.B[d], geom::UNIT_MASK[u]);
             if(geom::any(mask)){
                 int cell = geom::ctz(mask);
+<<<<<<< HEAD
                 // guard: do not double-place (L1 can be queued for already-fixed digits)
                 if(!S.cell_value[cell]){
                     if(!place_digit(S, cell, d)) return false;
                     ++S.last_prop_placements;
                     progressed=true;
                 }
+=======
+                if(!place_digit(S, cell, d)) return false;
+                ++S.last_prop_placements;
+                progressed=true;
+>>>>>>> origin/main
             }
         }
         if(S.contradiction) return false;

@@ -18,6 +18,7 @@ inline double cpu_time_seconds(){
 inline double wall_ms(SteadyClock::time_point start, SteadyClock::time_point end){
     return std::chrono::duration<double, std::milli>(end - start).count();
 }
+<<<<<<< HEAD
 
 bool validate_solution(const SolverState& S, const std::string& puzzle){
     // Check all cells filled and fixed clues honored.
@@ -73,6 +74,8 @@ bool validate_solution(const SolverState& S, const std::string& puzzle){
 
     return true;
 }
+=======
+>>>>>>> origin/main
 } // namespace
 
 SudokuSolver::SudokuSolver(const SolverConfig& cfg) : config_(cfg) {
@@ -86,10 +89,13 @@ SudokuSolver::SudokuSolver(const SolverConfig& cfg) : config_(cfg) {
 }
 
 bool SudokuSolver::solve(const std::string& puzzle, SolverTimings* timings){
+<<<<<<< HEAD
     // Important: this solver instance can be reused across many puzzles (benchmark mode).
     // The trail must be cleared per puzzle; otherwise memory grows without bound.
     trail_.log.clear();
 
+=======
+>>>>>>> origin/main
     auto init_wall_start = SteadyClock::now();
     double init_cpu_start = cpu_time_seconds();
     S_.init_from_puzzle(puzzle);
@@ -126,7 +132,10 @@ bool SudokuSolver::solve(const std::string& puzzle, SolverTimings* timings){
         timings->search_cpu_ms = (search_cpu_end - search_cpu_start) * 1000.0;
     }
 
+<<<<<<< HEAD
     if(ok && !validate_solution(S_, puzzle)) return false;
+=======
+>>>>>>> origin/main
     return ok;
 }
 
