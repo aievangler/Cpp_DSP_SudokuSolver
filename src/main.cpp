@@ -80,7 +80,11 @@ int main(int argc, char** argv){
     bool timings_enabled = false;
     bool dual_enabled = false;
     bool benchmark_mode = false;
+    bool srd_enabled = false;
+    int srd_min_depth = 0;
+    int srd_max_depth = 99;
     std::string file_path;
+    std::string dump_times_path;
     std::string puzzle_arg;
 
     for(int i=1; i<argc; ++i){
@@ -97,6 +101,26 @@ int main(int argc, char** argv){
             benchmark_mode = true;
         }else if(arg == "--dual-activation"){
             dual_enabled = true;
+        }else if(arg == "--srd"){
+            srd_enabled = true;
+        }else if(arg == "--srd-min-depth"){
+            if(i+1 >= argc){
+                std::cerr << "--srd-min-depth requires a value\n";
+                return 1;
+            }
+            srd_min_depth = std::stoi(argv[++i]);
+        }else if(arg == "--srd-max-depth"){
+            if(i+1 >= argc){
+                std::cerr << "--srd-max-depth requires a value\n";
+                return 1;
+            }
+            srd_max_depth = std::stoi(argv[++i]);
+        }else if(arg == "--dump-times"){
+            if(i+1 >= argc){
+                std::cerr << "--dump-times requires a path\n";
+                return 1;
+            }
+            dump_times_path = argv[++i];
         }else{
             puzzle_arg = arg;
         }
@@ -104,6 +128,9 @@ int main(int argc, char** argv){
 
     SolverConfig cfg;
     cfg.dual.enabled = dual_enabled;
+    cfg.srd_enabled = srd_enabled;
+    cfg.srd_min_depth = srd_min_depth;
+    cfg.srd_max_depth = srd_max_depth;
 
     if(!file_path.empty()){
 
@@ -120,19 +147,32 @@ int main(int argc, char** argv){
             double total_cpu_ms = 0.0;
             size_t puzzles = 0;
             size_t solved = 0;
+            std::ofstream times_out;
+            if(!dump_times_path.empty()){
+                times_out.open(dump_times_path);
+                if(!times_out){
+                    std::cerr << "Failed to open " << dump_times_path << "\n";
+                    return 1;
+                }
+                times_out << "index,wall_ms,ok\n";
+            }
             while(std::getline(in, line)){
                 std::string puzzle = trim(line);
                 if(puzzle.empty() || puzzle[0] == '#') continue;
-                ++puzzles;
+                size_t index = puzzles++;
                 auto solve_wall_start = SteadyClock::now();
                 double solve_cpu_start = cpu_time_seconds();
                 bool ok = solver.solve(puzzle);
                 auto solve_wall_end = SteadyClock::now();
                 double solve_cpu_end = cpu_time_seconds();
-                total_wall_ms += wall_ms(solve_wall_start, solve_wall_end);
+                double solve_wall_ms = wall_ms(solve_wall_start, solve_wall_end);
+                total_wall_ms += solve_wall_ms;
                 total_cpu_ms += (solve_cpu_end - solve_cpu_start) * 1000.0;
                 if(ok) ++solved;
                 all_ok = all_ok && ok;
+                if(times_out){
+                    times_out << index << "," << solve_wall_ms << "," << (ok ? 1 : 0) << "\n";
+                }
             }
             std::cout << "benchmark puzzles=" << puzzles
                       << " solved=" << solved

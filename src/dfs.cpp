@@ -2,6 +2,7 @@
 #include "propagation.hpp"
 #include "scoring.hpp"
 #include "trail.hpp"
+#include "geometry.hpp"
 #include <algorithm>
 
 namespace {
@@ -12,6 +13,18 @@ inline int fill_candidates(uint16_t mask, int cand[9]) {
         int d = __builtin_ctz((unsigned)mask);
         cand[n++] = d;
         mask &= (uint16_t)(mask - 1);
+    }
+    return n;
+}
+
+inline int fill_unit_digit_cells(const SolverState& S, int unit, int d, int cells[9]) {
+    auto mask = geom::band(S.B[d], geom::UNIT_MASK[unit]);
+    int n = 0;
+    while (geom::any(mask)) {
+        int c = geom::ctz(mask);
+        cells[n++] = c;
+        if (c < 64) mask.lo &= (mask.lo - 1);
+        else mask.hi &= (mask.hi - 1);
     }
     return n;
 }
@@ -34,6 +47,23 @@ inline void sort_candidates_desc(int cand[9], int n, ScoreFn score) {
     }
 }
 } // namespace
+
+static int select_srd_unit_digit(const SolverState& S, int mrv, int& best_unit, int& best_digit) {
+    int best = mrv;
+    best_unit = -1;
+    best_digit = -1;
+    for (int u = 0; u < 27; ++u) {
+        for (int d = 0; d < 9; ++d) {
+            int cnt = S.unit_digit_count[u][d];
+            if (cnt <= 1 || cnt >= best) continue;
+            best = cnt;
+            best_unit = u;
+            best_digit = d;
+            if (best == 2) return best;
+        }
+    }
+    return best_unit >= 0 ? best : 0;
+}
 
 static bool dfs_single_node(SolverState& S, const SolverConfig& cfg, int depth);
 static bool dfs_dual_node(SolverState& S, const SolverConfig& cfg, int depth);
@@ -62,6 +92,36 @@ static bool dfs_single_node(SolverState& S, const SolverConfig& cfg, int depth) 
 
     int c = select_mrv_cell(S);
     if (c < 0) return true;
+
+    int mrv = popcount9(S.cell_mask[c]);
+    if (cfg.srd_enabled && depth >= cfg.srd_min_depth && depth <= cfg.srd_max_depth && mrv > 1) {
+        int best_unit = -1;
+        int best_digit = -1;
+        int best = select_srd_unit_digit(S, mrv, best_unit, best_digit);
+        if (best > 0 && best < mrv) {
+            int cells[9];
+            int n_cells = fill_unit_digit_cells(S, best_unit, best_digit, cells);
+            compute_scarcity(S);
+            sort_candidates_desc(cells, n_cells, [&](int cell){ return score_digit(S, cell, best_digit); });
+            for (int i = 0; i < n_cells; ++i) {
+                int cell = cells[i];
+                size_t mark = S.trail->mark();
+                if (!place_digit(S, cell, best_digit)) {
+                    S.trail->undo_to(S, mark);
+                    continue;
+                }
+                if (!propagate(S)) {
+                    S.trail->undo_to(S, mark);
+                    continue;
+                }
+                if (dfs_single_node(S, cfg, depth + 1)) {
+                    return true;
+                }
+                S.trail->undo_to(S, mark);
+            }
+            return false;
+        }
+    }
 
     uint16_t mask = S.cell_mask[c];
     int cand[9];

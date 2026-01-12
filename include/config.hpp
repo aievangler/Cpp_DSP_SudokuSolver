@@ -26,4 +26,7 @@ struct DualConfig {
 
 struct SolverConfig {
     DualConfig dual{};
+    bool srd_enabled = false;
+    int srd_min_depth = 0;
+    int srd_max_depth = 99;
 };
