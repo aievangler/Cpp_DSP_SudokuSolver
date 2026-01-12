@@ -83,6 +83,11 @@ int main(int argc, char** argv){
     bool srd_enabled = false;
     int srd_min_depth = 0;
     int srd_max_depth = 99;
+    bool shoot_ones_enabled = false;
+    int shoot_ones_depth = 0;
+    bool shoot_ones_soft = false;
+    int shoot_ones_rule = 0;
+    int shoot_ones_min_score = -1000000;
     std::string file_path;
     std::string dump_times_path;
     std::string puzzle_arg;
@@ -115,6 +120,32 @@ int main(int argc, char** argv){
                 return 1;
             }
             srd_max_depth = std::stoi(argv[++i]);
+        }else if(arg == "--shoot-ones"){
+            shoot_ones_enabled = true;
+        }else if(arg == "--shoot-ones-depth"){
+            if(i+1 >= argc){
+                std::cerr << "--shoot-ones-depth requires a value\n";
+                return 1;
+            }
+            shoot_ones_enabled = true;
+            shoot_ones_depth = std::stoi(argv[++i]);
+        }else if(arg == "--shoot-ones-soft"){
+            shoot_ones_enabled = true;
+            shoot_ones_soft = true;
+        }else if(arg == "--shoot-ones-rule"){
+            if(i+1 >= argc){
+                std::cerr << "--shoot-ones-rule requires a value\n";
+                return 1;
+            }
+            shoot_ones_enabled = true;
+            shoot_ones_rule = std::stoi(argv[++i]);
+        }else if(arg == "--shoot-ones-min-score"){
+            if(i+1 >= argc){
+                std::cerr << "--shoot-ones-min-score requires a value\n";
+                return 1;
+            }
+            shoot_ones_enabled = true;
+            shoot_ones_min_score = std::stoi(argv[++i]);
         }else if(arg == "--dump-times"){
             if(i+1 >= argc){
                 std::cerr << "--dump-times requires a path\n";
@@ -131,6 +162,11 @@ int main(int argc, char** argv){
     cfg.srd_enabled = srd_enabled;
     cfg.srd_min_depth = srd_min_depth;
     cfg.srd_max_depth = srd_max_depth;
+    cfg.shoot_ones = shoot_ones_enabled;
+    cfg.shoot_ones_depth = shoot_ones_depth;
+    cfg.shoot_ones_soft = shoot_ones_soft;
+    cfg.shoot_ones_rule = shoot_ones_rule;
+    cfg.shoot_ones_min_score = shoot_ones_min_score;
 
     if(!file_path.empty()){
 

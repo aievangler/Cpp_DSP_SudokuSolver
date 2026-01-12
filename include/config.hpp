@@ -29,4 +29,9 @@ struct SolverConfig {
     bool srd_enabled = false;
     int srd_min_depth = 0;
     int srd_max_depth = 99;
+    bool shoot_ones = false;
+    int shoot_ones_depth = 0;
+    bool shoot_ones_soft = false;
+    int shoot_ones_rule = 0;
+    int shoot_ones_min_score = -1000000;
 };
